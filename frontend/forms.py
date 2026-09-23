@@ -53,3 +53,11 @@ class BusinessRequestForm(forms.ModelForm):
             field.error_messages["max_length"] = (
                 "Слишком длинный текст. Максимум — %(limit_value)s символов."
             )
+
+class ProposalForm(forms.Form):
+    solution = forms.CharField(
+        min_length=10,
+        max_length=5000,
+        strip=True,
+        widget=forms.Textarea,
+    )

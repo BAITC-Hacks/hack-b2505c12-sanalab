@@ -9,16 +9,82 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from .forms import BusinessRequestForm, ProposalForm
 from backend.models import BusinessRequest
-from .forms import BusinessRequestForm
 
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+
+from accounts.models import AccountProfile
+from .models import Proposal
 
 OWNER_SESSION_KEY = "business_request_owner"
 
 
 def index(request):
-    # Обработчик главной сохранён: frontend.urls по-прежнему использует views.index.
-    return render(request, "frontend/index.html", {"title": "Добро пожаловать!"})
+    tasks = BusinessRequest.objects.none()
+    applied_task_ids = set()
+
+    if request.user.is_authenticated:
+        is_student = AccountProfile.objects.filter(
+            user=request.user,
+            role=AccountProfile.Role.STUDENT,
+        ).exists()
+
+        if is_student:
+            tasks = BusinessRequest.objects.filter(
+                status=BusinessRequest.Status.CONFIRMED,
+            ).order_by("-confirmed_at", "-pk")
+
+            applied_task_ids = set(
+                Proposal.objects.filter(student=request.user)
+                .values_list("task_id", flat=True)
+            )
+
+    return render(request, "frontend/index.html", {
+        "title": "Добро пожаловать!",
+        "tasks": tasks,
+        "applied_task_ids": applied_task_ids,
+    })
+
+
+@csrf_protect
+@require_POST
+@login_required(login_url="accounts:choose")
+def submit_proposal(request, pk):
+    is_student = AccountProfile.objects.filter(
+        user=request.user,
+        role=AccountProfile.Role.STUDENT,
+    ).exists()
+    if not is_student:
+        raise PermissionDenied
+
+    task = get_object_or_404(
+        BusinessRequest,
+        pk=pk,
+        status=BusinessRequest.Status.CONFIRMED,
+    )
+
+    form = ProposalForm(request.POST)
+    if not form.is_valid():
+        messages.error(
+            request,
+            "Опишите предложение: от 10 до 5000 символов.",
+        )
+        return redirect("frontend:home")
+
+    proposal, created = Proposal.objects.get_or_create(
+        task=task,
+        student=request.user,
+        defaults={"solution": form.cleaned_data["solution"]},
+    )
+
+    if created:
+        messages.success(request, "Предложение отправлено.")
+    else:
+        messages.info(request, "Вы уже подали заявку на эту задачу.")
+
+    return redirect("frontend:home")
 
 
 def _owned_requests(request):
@@ -169,3 +235,4 @@ def request_confirm(request, pk):
     else:
         messages.error(request, "Карточка уже изменилась. Проверьте её текущий статус.")
     return redirect("frontend:request_detail", pk=pk)
+
