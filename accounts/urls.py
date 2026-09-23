@@ -24,4 +24,5 @@ urlpatterns = [
     path("<role:role>/login/", views.login_view, name="login"),
     path("<role:role>/", views.dashboard_view, name="dashboard"),
     path("logout/", LogoutView.as_view(next_page="accounts:choose"), name="logout"),
+    path("profile/", views.profile_view, name="profile"),
 ]

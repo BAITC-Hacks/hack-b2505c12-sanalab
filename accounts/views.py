@@ -4,6 +4,8 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import redirect, render
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
 from .models import AccountProfile
 
@@ -20,7 +22,7 @@ def choose_role(request):
 
 def register_view(request, role):
     if request.user.is_authenticated:
-        return redirect("accounts:dashboard", role=request.user.account_profile.role)
+        return redirect("accounts:profile")
 
     form = UserCreationForm(request.POST or None)
 
@@ -30,7 +32,7 @@ def register_view(request, role):
             AccountProfile.objects.create(user=user, role=role)
 
         login(request, user)
-        return redirect("accounts:dashboard", role=role)
+        return redirect("accounts:profile")
 
     return render(request, "accounts/register.html", {
         "form": form,
@@ -41,7 +43,7 @@ def register_view(request, role):
 
 def login_view(request, role):
     if request.user.is_authenticated:
-        return redirect("accounts:dashboard", role=request.user.account_profile.role)
+        return redirect("accounts:profile")
 
     form = AuthenticationForm(request, data=request.POST or None)
 
@@ -53,7 +55,7 @@ def login_view(request, role):
             form.add_error(None, "Неверные данные или тип аккаунта.")
         else:
             login(request, user)
-            return redirect("accounts:dashboard", role=role)
+            return redirect("accounts:profile")
 
     return render(request, "accounts/login.html", {
         "form": form,
@@ -70,4 +72,25 @@ def dashboard_view(request, role):
 
     return render(request, "accounts/dashboard.html", {
         "role_name": ROLE_NAMES[role],
+    })
+
+@require_GET
+def profile_view(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"error": "Необходимо войти в аккаунт."},
+            status=401,
+        )
+
+    profile = AccountProfile.objects.filter(user=request.user).first()
+    if profile is None:
+        return JsonResponse(
+            {"error": "Для пользователя не указан тип аккаунта."},
+            status=403,
+        )
+
+    return JsonResponse({
+        "username": request.user.get_username(),
+        "role": profile.role,
+        "role_display": profile.get_role_display(),
     })
