@@ -22,7 +22,10 @@ def choose_role(request):
 
 def register_view(request, role):
     if request.user.is_authenticated:
-        return redirect("accounts:profile")
+        return redirect(
+            "accounts:dashboard",
+            role=request.user.account_profile.role,
+        )
 
     form = UserCreationForm(request.POST or None)
 
@@ -32,7 +35,7 @@ def register_view(request, role):
             AccountProfile.objects.create(user=user, role=role)
 
         login(request, user)
-        return redirect("accounts:profile")
+        return redirect("accounts:dashboard", role=role)
 
     return render(request, "accounts/register.html", {
         "form": form,
