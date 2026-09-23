@@ -42,37 +42,47 @@ def register_view(request, role):
 
 
 def login_view(request, role):
-    if request.user.is_authenticated:
-        return redirect("accounts:profile")
+        if request.user.is_authenticated:
+            return redirect(
+                "accounts:dashboard",
+                role=request.user.account_profile.role,
+            )
+        form = AuthenticationForm(request, data=request.POST or None)
 
-    form = AuthenticationForm(request, data=request.POST or None)
+        if request.method == "POST" and form.is_valid():
+            user = form.get_user()
+            profile = AccountProfile.objects.filter(user=user, role=role).first()
 
-    if request.method == "POST" and form.is_valid():
-        user = form.get_user()
-        profile = AccountProfile.objects.filter(user=user, role=role).first()
+            if profile is None:
+                form.add_error(None, "Неверные данные или тип аккаунта.")
+            else:
+                login(request, user)
+                return redirect("accounts:dashboard", role=profile.role)
 
-        if profile is None:
-            form.add_error(None, "Неверные данные или тип аккаунта.")
-        else:
-            login(request, user)
-            return redirect("accounts:profile")
-
-    return render(request, "accounts/login.html", {
-        "form": form,
-        "role": role,
-        "role_name": ROLE_NAMES[role],
-    })
+        return render(request, "accounts/login.html", {
+            "form": form,
+            "role": role,
+            "role_name": ROLE_NAMES[role],
+        })
 
 
 @login_required(login_url="accounts:choose")
 def dashboard_view(request, role):
-    profile = AccountProfile.objects.filter(user=request.user).first()
+    profile = AccountProfile.objects.filter(
+        user=request.user,
+    ).first()
+
     if profile is None or profile.role != role:
         raise PermissionDenied
 
-    return render(request, "accounts/dashboard.html", {
-        "role_name": ROLE_NAMES[role],
-    })
+    return render(
+        request,
+        "accounts/dashboard.html",
+        {
+            "role": profile.role,
+            "role_name": ROLE_NAMES[profile.role],
+        },
+    )
 
 @require_GET
 def profile_view(request):
