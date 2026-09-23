@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 
 class BusinessRequest(models.Model):
@@ -43,6 +44,14 @@ class BusinessRequest(models.Model):
     owner_key = models.CharField(
         "Ключ сессии автора", max_length=64, blank=True,
         default="", editable=False, db_index=True,
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="business_requests",
     )
 
     # Старые поля не удаляем: данные прежних заявок сохраняются.

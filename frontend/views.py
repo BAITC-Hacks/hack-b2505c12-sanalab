@@ -88,11 +88,9 @@ def submit_proposal(request, pk):
 
 
 def _owned_requests(request):
-    """Нет ключа сессии — нет доступа к чужим или старым карточкам."""
-    key = request.session.get(OWNER_SESSION_KEY)
-    if not isinstance(key, str) or len(key) != 64:
+    if not request.user.is_authenticated:
         return BusinessRequest.objects.none()
-    return BusinessRequest.objects.filter(owner_key=key)
+    return BusinessRequest.objects.filter(owner=request.user)
 
 
 def _owner_key(request):
@@ -124,14 +122,21 @@ def _render_request_form(request, form, item=None, *, status=200):
     }, status=status)
 
 
+@login_required(login_url="accounts:choose")
 @never_cache
 @csrf_protect
 @require_http_methods(["GET", "POST"])
 def business_request(request):
+    if not AccountProfile.objects.filter(
+        user=request.user,
+        role=AccountProfile.Role.BUSINESS,
+    ).exists():
+        raise PermissionDenied
     form = BusinessRequestForm(request.POST if request.method == "POST" else None)
     if request.method == "POST" and form.is_valid():
         item = form.save(commit=False)
-        item.owner_key = _owner_key(request)
+        item.owner = request.user
+        item.owner_key = _owner_key(request)  # пока оставь: поле уже есть в твоей модели
         item.status = BusinessRequest.Status.DRAFT
         item.confirmed_at = None
         item.save()

@@ -149,6 +149,22 @@
             .account-actions--signed-in .account-user { text-align: center; max-width: 100%; }
             .account-session-links { justify-content: center; }
         }
+
+        .task-card { display: flex; flex-direction: column; gap: 14px; }
+        .task-card h3 { margin: 0; }
+        .task-card p { overflow-wrap: anywhere; }
+        .task-text { white-space: pre-wrap; }
+        .proposal-form { display: grid; gap: 10px; margin-top: auto; }
+        .proposal-form label { font-weight: bold; }
+        .proposal-form textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 10px;
+            font: inherit;
+            border: 1px solid #aeb4c4;
+            border-radius: 8px;
+        }
+        .proposal-form button { border: 0; cursor: pointer; }
     </style>
 </head>
 
@@ -220,6 +236,52 @@
     Описать задачу
     </a>
         </section>
+
+        {% if messages %}
+    {% for message in messages %}
+        <p role="status">{{ message }}</p>
+    {% endfor %}
+{% endif %}
+
+{% if user.is_authenticated and user.account_profile.role == 'student' %}
+<section class="section" id="tasks">
+    <h2>Задачи бизнеса</h2>
+
+    {% if tasks %}
+        <div class="cards">
+            {% for task in tasks %}
+                <article class="card task-card">
+                    <h3>{{ task.title }}</h3>
+                    <p class="task-text"><strong>Описание:</strong> {{ task.description }}</p>
+                    <p class="task-text"><strong>Потребность:</strong> {{ task.need }}</p>
+                    <p class="task-text"><strong>Ожидаемый результат:</strong> {{ task.expected_result }}</p>
+                    <p><strong>Формат взаимодействия:</strong> {{ task.interaction_format }}</p>
+                    <p><strong>Контакт:</strong> {{ task.contact }}</p>
+
+                    {% if task.pk in applied_task_ids %}
+                        <p>Ваша заявка уже отправлена.</p>
+                    {% else %}
+                        <form class="proposal-form"
+                              method="post"
+                              action="{% url 'frontend:submit_proposal' task.pk %}">
+                            {% csrf_token %}
+                            <label for="solution-{{ task.pk }}">Ваше предложение</label>
+                            <textarea id="solution-{{ task.pk }}"
+                                      name="solution"
+                                      minlength="10"
+                                      maxlength="5000"
+                                      required></textarea>
+                            <button class="button" type="submit">Подать заявку</button>
+                        </form>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Пока нет подтверждённых задач.</p>
+    {% endif %}
+</section>
+{% endif %}
 
         <section class="section" id="about">
             <h2>О проекте</h2>
