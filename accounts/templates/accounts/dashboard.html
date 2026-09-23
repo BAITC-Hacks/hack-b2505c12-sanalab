@@ -1,7 +1,22 @@
-<h1>Аккаунт {{ role_name }}</h1>
-<p>Вы вошли как {{ request.user.username }}.</p>
-
-<form method="post" action="{% url 'accounts:logout' %}">
-    {% csrf_token %}
-    <button type="submit">Выйти</button>
-</form>
+{% extends "accounts/auth_base.html" %}
+{% block title %}Личный кабинет{% endblock %}
+{% block content %}
+<div class="auth-shell">
+    <a class="back-link" href="{% url 'frontend:home' %}">← На главную</a>
+    <section class="auth-card" aria-labelledby="page-title">
+        <p class="eyebrow">Личный кабинет</p>
+        <h1 id="page-title">Ваш аккаунт</h1>
+        <p class="subtitle">Вы вошли как {{ request.user.username }}.</p>
+        <dl class="account-info">
+            <dt>Имя пользователя</dt>
+            <dd>{{ request.user.username }}</dd>
+            <dt>Тип аккаунта</dt>
+            <dd>{{ role_name }}</dd>
+        </dl>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="button button-secondary button-full" type="submit">Выйти из аккаунта</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

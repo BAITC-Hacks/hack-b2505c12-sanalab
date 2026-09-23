@@ -1,9 +1,50 @@
-<h1>Вход для {{ role_name }}</h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Войти</button>
-</form>
-
-<a href="{% url 'accounts:register' role %}">Создать аккаунт</a>
+{% extends "accounts/auth_base.html" %}
+{% block title %}Вход для {{ role_name }}{% endblock %}
+{% block content %}
+<div class="auth-shell">
+    <a class="back-link" href="{% url 'frontend:home' %}">← На главную</a>
+    <section class="auth-card" aria-labelledby="page-title">
+        <p class="eyebrow">Личный кабинет</p>
+        <h1 id="page-title">Вход в аккаунт</h1>
+        <p class="subtitle">Для {{ role_name }}</p>
+        <nav class="role-switch" aria-label="Тип аккаунта для входа">
+            <a href="{% url 'accounts:login' 'business' %}" {% if role == 'business' %}aria-current="page"{% endif %}>Бизнес</a>
+            <a href="{% url 'accounts:login' 'student' %}" {% if role == 'student' %}aria-current="page"{% endif %}>Студент</a>
+        </nav>
+        {% if form %}
+        <form method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div class="notice error" role="alert">
+                    <strong>Проверьте введённые данные.</strong>
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+                {% if hidden.errors %}
+                    <div class="notice error" role="alert">{{ hidden.errors }}</div>
+                {% endif %}
+            {% endfor %}
+            {% for field in form.visible_fields %}
+                <div class="field{% if field.errors %} has-errors{% endif %}">
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == 'username' %}Имя пользователя{% elif field.name == 'password' or field.name == 'password1' %}Пароль{% elif field.name == 'password2' %}Повторите пароль{% elif field.name == 'email' %}Электронная почта{% else %}{{ field.label }}{% endif %}
+                        {% if field.field.required %}<span class="required" aria-hidden="true">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>
+                    {% endif %}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <button class="button button-full" type="submit">Войти</button>
+        </form>
+        {% else %}
+        <div class="notice error" role="alert">Форма не загружена. Проверьте, что обработчик передаёт переменную form в шаблон.</div>
+        {% endif %}
+        <p class="auth-bottom">Нет аккаунта? <a href="{% url 'accounts:register' role %}">Зарегистрироваться</a></p>
+    </section>
+</div>
+{% endblock %}

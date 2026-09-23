@@ -1,9 +1,28 @@
-<h1>Выберите тип аккаунта</h1>
-
-<h2>Представитель бизнеса</h2>
-<a href="{% url 'accounts:register' 'business' %}">Регистрация</a>
-<a href="{% url 'accounts:login' 'business' %}">Вход</a>
-
-<h2>Студент</h2>
-<a href="{% url 'accounts:register' 'student' %}">Регистрация</a>
-<a href="{% url 'accounts:login' 'student' %}">Вход</a>
+{% extends "accounts/auth_base.html" %}
+{% block title %}Выберите тип аккаунта{% endblock %}
+{% block content %}
+<div class="wide-shell">
+    <a class="back-link" href="{% url 'frontend:home' %}">← На главную</a>
+    <p class="eyebrow">Вход и регистрация</p>
+    <h1>Выберите тип аккаунта</h1>
+    <p class="subtitle">Войдите в существующий аккаунт или создайте новый.</p>
+    <div class="role-grid">
+        <section class="auth-card role-card">
+            <h2>Представитель бизнеса</h2>
+            <p>Вход и регистрация для представителя бизнеса.</p>
+            <div class="role-actions">
+                <a class="button" href="{% url 'accounts:register' 'business' %}">Зарегистрироваться</a>
+                <a class="button button-secondary" href="{% url 'accounts:login' 'business' %}">Войти</a>
+            </div>
+        </section>
+        <section class="auth-card role-card">
+            <h2>Студент</h2>
+            <p>Вход и регистрация для студента.</p>
+            <div class="role-actions">
+                <a class="button" href="{% url 'accounts:register' 'student' %}">Зарегистрироваться</a>
+                <a class="button button-secondary" href="{% url 'accounts:login' 'student' %}">Войти</a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
