@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная | МойСайт</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #242938;
+            background: #f5f6fa;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header, footer { background: #fff; }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4054c7;
+            text-decoration: none;
+        }
+
+        nav { display: flex; flex-wrap: wrap; gap: 20px; }
+        nav a { color: #242938; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+
+        a:focus-visible {
+            outline: 3px solid #4054c7;
+            outline-offset: 4px;
+        }
+
+        main { flex: 1; }
+
+        .hero {
+            padding: 70px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 16px;
+            font-size: clamp(30px, 5vw, 44px);
+        }
+
+        h2 { margin: 0 0 20px; font-size: 26px; }
+        h3 { margin: 0 0 10px; }
+        p { margin: 0; }
+
+        .hero p {
+            max-width: 600px;
+            margin: 0 auto 28px;
+            color: #555d70;
+            font-size: 18px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            background: #4054c7;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .button:hover { background: #30419f; }
+
+        .section { margin-bottom: 48px; }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .card, .contacts {
+            padding: 24px;
+            border: 1px solid #e3e6ee;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        .card p, .contacts p { color: #555d70; }
+
+        footer {
+            padding: 20px;
+            text-align: center;
+            color: #555d70;
+        }
+
+        @media (max-width: 640px) {
+            .header-inner { flex-direction: column; }
+            .cards { grid-template-columns: 1fr; }
+            .hero { padding: 48px 0; }
+        }
+    </style>
+</head>
+
+<body id="home">
+    <header>
+        <div class="container header-inner">
+            <a class="logo" href="#home">МойСайт</a>
+
+            <nav aria-label="Основная навигация">
+                <a href="#home">Главная</a>
+                <a href="#about">О проекте</a>
+                <a href="#contacts">Контакты</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>{{ title|default:"Добро пожаловать!" }}</h1>
+
+            <p>
+                Это главная страница нашего сайта. Здесь будет информация
+                о проекте, новости и полезные материалы.
+            </p>
+
+            <a class="button" href="#about">Узнать больше</a>
+        </section>
+
+        <section class="section" id="about">
+            <h2>О проекте</h2>
+
+            <div class="cards">
+                <article class="card">
+                    <h3>Наша идея</h3>
+                    <p>
+                        Расскажи здесь, какую задачу решает твой проект
+                        и кому он помогает.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <h3>Возможности</h3>
+                    <p>
+                        Добавь описание основных функций и того, что
+                        пользователи смогут делать на сайте.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <h3>Новости</h3>
+                    <p>
+                        Здесь можно публиковать обновления
+                        и рассказывать о развитии проекта.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section contacts" id="contacts">
+            <h2>Контакты</h2>
+            <p>Добавь сюда свою почту или ссылки на социальные сети.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; {% now "Y" %} МойСайт</p>
+    </footer>
+</body>
+</html>
