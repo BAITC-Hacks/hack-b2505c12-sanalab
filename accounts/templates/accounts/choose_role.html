@@ -1,0 +1,9 @@
+<h1>Выберите тип аккаунта</h1>
+
+<h2>Представитель бизнеса</h2>
+<a href="{% url 'accounts:register' 'business' %}">Регистрация</a>
+<a href="{% url 'accounts:login' 'business' %}">Вход</a>
+
+<h2>Студент</h2>
+<a href="{% url 'accounts:register' 'student' %}">Регистрация</a>
+<a href="{% url 'accounts:login' 'student' %}">Вход</a>

@@ -1,0 +1,51 @@
+{% extends "frontend/request_base.html" %}
+
+{% block title %}Карточка заявки № {{ item.pk }}{% endblock %}
+
+{% block content %}
+    <a class="back" href="{% url 'frontend:request_list' %}">← Мои заявки</a>
+    <h1>Карточка заявки</h1>
+    <p class="intro">Проверьте все шесть полей. Данные можно отредактировать до и после подтверждения.</p>
+
+    <article class="request-card" aria-label="Данные заявки">
+        <div class="card-heading">
+            <span class="meta">Заявка № {{ item.pk }} · версия {{ item.revision }}</span>
+            <span class="badge {{ item.status }}">{{ item.get_status_display }}</span>
+        </div>
+        <dl class="details">
+            <div><dt>Название</dt><dd>{{ item.title }}</dd></div>
+            <div><dt>Описание</dt><dd>{{ item.description }}</dd></div>
+            <div><dt>Потребность</dt><dd>{{ item.need|default:"Не заполнено" }}</dd></div>
+            <div><dt>Ожидаемый результат</dt><dd>{{ item.expected_result|default:"Не заполнено" }}</dd></div>
+            <div><dt>Контакт</dt><dd>{{ item.contact|default:"Не заполнено" }}</dd></div>
+            <div><dt>Формат взаимодействия</dt><dd>{{ item.interaction_format|default:"Не заполнено" }}</dd></div>
+        </dl>
+        <p class="meta">Создана: {{ item.created_at|date:"d.m.Y H:i" }} · Обновлена: {{ item.updated_at|date:"d.m.Y H:i" }}</p>
+
+        <div class="actions">
+            <a class="button secondary" href="{% url 'frontend:request_edit' item.pk %}">Редактировать</a>
+            <a class="cancel" href="{% url 'frontend:request_list' %}">Мои заявки</a>
+        </div>
+
+        {% if item.status == 'confirmed' %}
+            <div class="confirm-panel">
+                <h2>Заявка подтверждена</h2>
+                <p>Вы вручную подтвердили данные {{ item.confirmed_at|date:"d.m.Y H:i" }}.</p>
+                <p class="help">Сохранение последующих правок вернёт карточку в черновик. Это подтверждение автора, а не одобрение администратором.</p>
+            </div>
+        {% else %}
+            <form class="confirm-panel" method="post" action="{% url 'frontend:request_confirm' item.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="revision" value="{{ item.revision }}">
+                <h2>Подтвердить данные</h2>
+                <p class="note">Пока это черновик. Отдельным действием подтвердите, что содержание карточки верно.</p>
+                <label class="check-label" for="confirm-checked">
+                    <input type="checkbox" id="confirm-checked" name="confirm" value="yes" required>
+                    <span>Я проверил(а) данные и подтверждаю эту заявку.</span>
+                </label>
+                <button class="button" type="submit">Подтвердить заявку</button>
+            </form>
+        {% endif %}
+    </article>
+    <p class="session-note">Карточка доступна только в сессии браузера, где создана заявка. После очистки cookies или завершения сессии доступ через сайт может пропасть; запись останется в базе.</p>
+{% endblock %}

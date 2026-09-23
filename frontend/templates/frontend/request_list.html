@@ -1,0 +1,41 @@
+{% extends "frontend/request_base.html" %}
+
+{% block title %}Мои заявки{% endblock %}
+
+{% block content %}
+    <a class="back" href="{% url 'frontend:home' %}">← На главную</a>
+    <h1>Мои заявки</h1>
+    <p class="intro">Черновики и подтверждённые карточки, созданные в текущей сессии браузера.</p>
+    <a class="button" href="{% url 'frontend:business_request' %}">Создать заявку</a>
+
+    <div class="cards">
+        {% for item in page_obj %}
+            <article class="request-card">
+                <div class="card-heading">
+                    <span class="meta">№ {{ item.pk }} · {{ item.created_at|date:"d.m.Y H:i" }}</span>
+                    <span class="badge {{ item.status }}">{{ item.get_status_display }}</span>
+                </div>
+                <h2>{{ item.title }}</h2>
+                <p class="card-summary">{{ item.description|truncatechars:180 }}</p>
+                <div class="actions">
+                    <a class="button secondary" href="{% url 'frontend:request_detail' item.pk %}">Открыть карточку</a>
+                    <a class="back" href="{% url 'frontend:request_edit' item.pk %}">Редактировать</a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="request-card">
+                <h2>Здесь пока нет заявок</h2>
+                <p>Создайте первую заявку. После сохранения появится карточка, которую можно исправить и подтвердить вручную.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <nav class="pagination" aria-label="Страницы списка заявок">
+            {% if page_obj.has_previous %}<a class="back" href="?page={{ page_obj.previous_page_number }}">← Назад</a>{% endif %}
+            <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a class="back" href="?page={{ page_obj.next_page_number }}">Далее →</a>{% endif %}
+        </nav>
+    {% endif %}
+    <p class="session-note">Старые заявки без привязки к сессии здесь не показываются. Их данные не удаляются и остаются в базе и ранее подключённой админке.</p>
+{% endblock %}
