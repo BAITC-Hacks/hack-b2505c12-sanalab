@@ -109,10 +109,45 @@
             color: #555d70;
         }
 
+        /* Прямые ссылки: переход сразу, без раскрывающегося меню и JavaScript. */
+        .account-actions { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+        .account-group { display: grid; gap: 5px; }
+        .account-caption { color: #62697a; font-size: 12px; font-weight: 700; }
+        .account-links { display: flex; align-items: center; gap: 8px; }
+        .account-link {
+            display: inline-flex; justify-content: center; align-items: center;
+            min-height: 40px; padding: 7px 12px; border: 1px solid #4054c7;
+            border-radius: 7px; color: #4054c7; background: #fff;
+            font-size: 13px; font-weight: 700; text-decoration: none;
+        }
+        .account-link:hover { background: #eef1ff; }
+        .account-link--primary { color: #fff; background: #4054c7; }
+        .account-link--primary:hover { background: #30419f; }
+        @media (max-width: 640px) {
+            .account-actions { width: 100%; max-width: 420px; justify-content: center; gap: 16px; }
+            .account-group { min-width: 0; flex: 1; }
+            .account-links { flex-direction: column; align-items: stretch; }
+            .account-caption { text-align: center; }
+        }
+
         @media (max-width: 640px) {
             .header-inner { flex-direction: column; }
             .cards { grid-template-columns: 1fr; }
             .hero { padding: 48px 0; }
+        }
+
+        /* После входа показываем кабинет своей роли, а не ссылки регистрации. */
+        .account-user { display: grid; gap: 2px; min-width: 0; max-width: 220px; }
+        .account-username { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+        .account-session-links { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .account-logout { display: flex; margin: 0; }
+        button.account-link { font-family: inherit; line-height: inherit; cursor: pointer; }
+        button.account-link:focus-visible { outline: 3px solid #4054c7; outline-offset: 4px; }
+        .account-profile-note { color: #62697a; font-size: 13px; }
+        @media (max-width: 640px) {
+            .account-actions--signed-in { flex-direction: column; gap: 10px; }
+            .account-actions--signed-in .account-user { text-align: center; max-width: 100%; }
+            .account-session-links { justify-content: center; }
         }
     </style>
 </head>
@@ -127,6 +162,48 @@
                 <a href="#about">О проекте</a>
                 <a href="#contacts">Контакты</a>
             </nav>
+
+            {% if user.is_authenticated %}
+                {% with role=user.account_profile.role %}
+                    <div class="account-actions account-actions--signed-in" role="group" aria-label="Ваш аккаунт">
+                        <div class="account-user">
+                            <span class="account-caption">Вы вошли как</span>
+                            <strong class="account-username" title="{{ user.username }}">{{ user.username }}</strong>
+                        </div>
+                        <div class="account-session-links">
+                            {% if role == 'business' or role == 'student' %}
+                                <a class="account-link account-link--primary"
+                                   href="{% url 'accounts:dashboard' role=role %}">
+                                    Личный кабинет
+                                </a>
+                            {% else %}
+                                <span class="account-profile-note">Профиль не настроен.</span>
+                            {% endif %}
+                            <form class="account-logout" method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button class="account-link" type="submit">Выйти</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endwith %}
+            {% else %}
+                <div class="account-actions" role="group" aria-label="Вход и регистрация">
+                    <div class="account-group" role="group" aria-label="Представитель бизнеса">
+                        <span class="account-caption">Представитель бизнеса</span>
+                        <div class="account-links">
+                            <a class="account-link" href="{% url 'accounts:login' 'business' %}">Войти</a>
+                            <a class="account-link account-link--primary" href="{% url 'accounts:register' 'business' %}">Регистрация</a>
+                        </div>
+                    </div>
+                    <div class="account-group" role="group" aria-label="Студент">
+                        <span class="account-caption">Студент</span>
+                        <div class="account-links">
+                            <a class="account-link" href="{% url 'accounts:login' 'student' %}">Войти</a>
+                            <a class="account-link account-link--primary" href="{% url 'accounts:register' 'student' %}">Регистрация</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </header>
 
